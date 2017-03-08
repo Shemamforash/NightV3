@@ -1,9 +1,9 @@
-/Library/
-/Temp/
-/Obj/
-/Build/
-/Builds/
-/Assets/AssetStoreTools*
+/NightV3/Library
+/NightV3/Temp
+/NightV3/Obj/
+/NightV3/Build
+/NightV3/Builds
+/NightV3/Assets/AssetStoreTools*
 
 # Visual Studio 2015 cache directory
 /.vs/
