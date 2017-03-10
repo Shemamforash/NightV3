@@ -5,6 +5,8 @@ using UnityEngine;
 public class WeatherController : MonoBehaviour
 {
     private static List<Weather> weather_types = new List<Weather>();
+	private Weather current_weather;
+	public List<GameObject> weather_systems;
 
     public static void CreateWeatherType(string type, string name, float food_mod, float water_mod, float temperature_mod, float weather_danger, float weather_severity)
     {

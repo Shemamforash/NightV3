@@ -5,6 +5,11 @@ using UnityEngine;
 public class EnvironmentController : MonoBehaviour
 {
     private static List<Environment> environment_types = new List<Environment>();
+	private Environment current_environment;
+
+	public void SetNewEnvironment(){
+
+	}
 
     public static void CreateEnvironmentType(string environment_class, string name, float fuel, float water, float food, float condition, float wet_severity, float dry_severity, float min_temp, float max_temp)
     {
