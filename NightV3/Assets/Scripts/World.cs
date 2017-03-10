@@ -9,6 +9,11 @@ public class World : WorldObjectParent
     private static float day_length_in_seconds = 20f, quarter_hour_length_in_seconds, time_counter = 0f;
     private bool paused = false;
     private static bool loaded_game_data = false;
+    private float difficulty = 0.1f;
+
+    public static int GetDayLength(){
+        return (int)(end_time - begin_time);
+    }
 
     // Use this for initialization
     void Start()
@@ -66,7 +71,7 @@ public class World : WorldObjectParent
                 current_time_minutes += 0.15f;
                 if (current_time_minutes == 0.6f)
                 {
-                    current_time_hours += 1;
+                    UpdateHours();
                     current_time_minutes = 0;
                     if (current_time_hours == end_time)
                     {
@@ -75,6 +80,18 @@ public class World : WorldObjectParent
                 }
             }
         }
+    }
+
+    private static void UpdateHours(){
+        ++current_time_hours;
+    }
+
+    public float GetDifficulty(){
+        return difficulty;
+    }
+
+    public float GetTime(){
+        return current_time_hours;
     }
 
     // Update is called once per frame
