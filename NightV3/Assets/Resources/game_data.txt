@@ -1,6 +1,7 @@
 level_duration: 20
 begin_time: 6
 end_time: 18
+map_size: 14
 
 WEATHER DRY
 Clear: -1: -2: 10: 0: 0
@@ -30,19 +31,19 @@ Earthquake: -1: 0: 0: 4: -0.4
 END
 
 ENVIRONMENT A
-Mountains: 1: 1.5: 1.5: 0.2: 0.1: 0.5: -10: 15
-Oasis: 0.5: 1.5: 1.5: 0.6: 0.1: 0.2: 18: 24
+Shattered Mountains: 1: 1.5: 1.5: 0.2: 0.1: 0.5: -10: 15
+Verdant Oasis: 0.5: 1.5: 1.5: 0.6: 0.1: 0.2: 18: 24
 END
 
 ENVIRONMENT B
 Oil Sands: 1.5: 0.5: 0.5: 0.7: 0.3: 0.2: 15: 30
-Ravines: 1: 1.5: 1: 0.3: 0.2: 0.6: -5: 10
-Prairie: 0.5: 1: 1.5: 0.4: 0.4: 0.4: 20: 35
-Scrublands: 1: 1: 1: 0.6: 0.6: 0.2: 28: 35
+Sheltered Ravines: 1: 1.5: 1: 0.3: 0.2: 0.6: -5: 10
+Endless Prairie: 0.5: 1: 1.5: 0.4: 0.4: 0.4: 20: 35
+Silent Scrublands: 1: 1: 1: 0.6: 0.6: 0.2: 28: 35
 END
 
 ENVIRONMENT C
-Salt Flats: 1: 0.5: 0.5: 0.8: 0.4: 0.1: 15: 25
-Wasteland: 0.5: 0.5: 1: 1: 0.8: 0: 18: 45
-Ruins: 0.5: 1: 0.5: 0.5: 0.5: 0.5: 10: 17
+Aching Salts: 1: 0.5: 0.5: 0.8: 0.4: 0.1: 15: 25
+Shattered Wastelands: 0.5: 0.5: 1: 1: 0.8: 0: 18: 45
+Dead Ruins: 0.5: 1: 0.5: 0.5: 0.5: 0.5: 10: 17
 END
