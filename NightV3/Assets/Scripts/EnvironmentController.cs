@@ -7,23 +7,29 @@ public class EnvironmentController : MonoBehaviour
     private static List<Environment> environment_types = new List<Environment>();
     private static Environment current_environment;
     private static float bound_range = 0.15f;
-    private enum EnvironmentDifficulty { easy, medium, hard };
+    public enum EnvironmentDifficulty { easy, medium, hard };
     private static float current_temperature;
     private static float[] temperature_range;
 
     public static void CalculateTemperatures()
     {
-		int hours = World.GetDayLength();
+		int hours = World.GetDayLength() + 1;
         float min_max_diff = current_environment.GetMaxTemp() - current_environment.GetMinTemp();
+        float weather_temperature_modifier = WeatherController.GetCurrentWeather().GetTemperatureModifier();
         temperature_range = new float[hours];
         for (int i = 0; i < hours; ++i)
         {
             float temperature_val = Mathf.Sin(i * 0.21f);
             temperature_val *= min_max_diff;
             temperature_val += current_environment.GetMinTemp();
+            temperature_val += weather_temperature_modifier;
             //TODO weather temperature modifier
             temperature_range[i] = Mathf.Floor(temperature_val);
         }
+    }
+
+    public static Environment GetCurrentEnvironment(){
+        return current_environment;
     }
 
     public static float GetCurrentTemperature(int current_hour)
@@ -71,7 +77,6 @@ public class EnvironmentController : MonoBehaviour
         {
             SetEnvironmentOfDifficulty(EnvironmentDifficulty.hard);
         }
-		CalculateTemperatures();
     }
 
     private static void SetEnvironmentOfDifficulty(EnvironmentDifficulty desired_difficulty)
@@ -98,7 +103,7 @@ public class EnvironmentController : MonoBehaviour
         environment_types.Add(new_type);
     }
 
-    private class Environment
+    public class Environment
     {
         private string name;
         private float fuel, water, food, scrap, condition, dry_severity, wet_severity, min_temp, max_temp;
@@ -130,6 +135,22 @@ public class EnvironmentController : MonoBehaviour
             this.dry_severity = dry_severity;
             this.min_temp = min_temp;
             this.max_temp = max_temp;
+        }
+
+        public string GetName() {
+            return name;
+        }
+
+        public float GetCondition(){
+            return condition;
+        }
+
+        public float GetDrySeverity(){
+            return dry_severity;
+        }
+
+        public float GetWetSeverity(){
+            return wet_severity;
         }
 
         public EnvironmentDifficulty GetDifficulty()

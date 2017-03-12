@@ -7,7 +7,7 @@ public class WeatherController : MonoBehaviour
     private static List<Weather> weather_types = new List<Weather>();
     private static Weather current_weather;
     public List<GameObject> weather_systems;
-    private enum WeatherWetness { dry, wet, misc };
+    public enum WeatherWetness { dry, wet, misc };
 
     public static void CreateWeatherType(string type, string name, float food_mod, float water_mod, float temperature_mod, float weather_danger, float weather_severity)
     {
@@ -15,14 +15,22 @@ public class WeatherController : MonoBehaviour
         weather_types.Add(new_type);
     }
 
-	public static void SetNewWeather(float environment_severity, float environment_condition) {
+    public static Weather GetCurrentWeather(){
+        return current_weather;
+    }
+
+	public static void SetNewWeather() {
+        float environment_condition = EnvironmentController.GetCurrentEnvironment().GetCondition();
+        float environment_severity = 0.2f;
 		float misc_chance = Random.Range(0f, 1f);
 		float environment_quality = Random.Range(0f, 1f);
 		if(misc_chance < 0.1f){
 			PickWeather(environment_severity, WeatherWetness.misc);
 		} else if(environment_quality > environment_condition){
+            environment_severity = EnvironmentController.GetCurrentEnvironment().GetWetSeverity();
 			PickWeather(environment_severity, WeatherWetness.wet);
 		} else {
+            environment_severity = EnvironmentController.GetCurrentEnvironment().GetDrySeverity();
 			PickWeather(environment_severity, WeatherWetness.dry);
 		}
 	}
@@ -41,7 +49,7 @@ public class WeatherController : MonoBehaviour
 		current_weather = potential_weathers[Random.Range(0, potential_weathers.Count)];
 	}
 
-    private class Weather
+    public class Weather
     {
         private string name;
         private float food_mod, water_mod, temperature_mod, weather_danger, weather_severity;
@@ -72,6 +80,10 @@ public class WeatherController : MonoBehaviour
             this.weather_severity = weather_severity;
         }
 
+        public string GetName(){
+            return name;
+        }
+
 		public WeatherWetness GetWetness(){
 			return wetness;
 		}
@@ -79,5 +91,9 @@ public class WeatherController : MonoBehaviour
 		public float GetSeverity(){
 			return weather_severity;
 		}
+
+        public float GetTemperatureModifier(){
+            return temperature_mod;
+        }
     }
 }
