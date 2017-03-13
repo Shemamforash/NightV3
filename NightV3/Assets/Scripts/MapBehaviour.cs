@@ -7,25 +7,50 @@ public class MapBehaviour : MonoBehaviour
 {
     public GameObject map_tile;
     private static int map_size, tile_side_length;
-    private float normalised_tile_side, desired_map_width, actual_map_width;
-    private Tile[,] tiles;
-    private float map_left, map_right, map_top, map_bottom;
+    private static float normalised_tile_side, desired_map_width, actual_map_width;
+    private static Tile[,] tiles;
+    private static float map_left, map_right, map_top, map_bottom;
     private int vision = 4;
-    private float last_screen_width, last_screen_height;
-    private List<Tile> selected_tiles = new List<Tile>();
+    private static float last_screen_width, last_screen_height;
+    private static List<Tile> selected_tiles = new List<Tile>();
 
     private class Tile
     {
-        public enum Resource { water, fuel, food, scrap };
+        public enum Resource { water, fuel, food, scrap, none };
         public Resource resource_here;
         public float resource_quantity;
         public enum State { explored, exploring, unexplored };
         private State explored_state = State.unexplored;
         private float danger;
         private Color default_color, current_color;
-        private GameObject tile_object;
+        private GameObject tile_object, text_object;
+
+        public void SetResourceHere(Resource resource_here)
+        {
+            this.resource_here = resource_here;
+            string resource_string = "";
+            switch (resource_here)
+            {
+                case Resource.water:
+                    resource_string = "W";
+                    break;
+                case Resource.food:
+                    resource_string = "F";
+                    break;
+                case Resource.fuel:
+                    resource_string = "C";
+                    break;
+                case Resource.scrap:
+                    resource_string = "S";
+                    break;
+            }
+			text_object.GetComponent<Text>().text = resource_string;
+			text_object.SetActive(false);
+        }
+
         public Tile(GameObject tile_object, int x, int y)
         {
+			text_object = tile_object.transform.Find("Contents").gameObject;
             this.tile_object = tile_object;
             x = PositionToDistance(x);
             y = PositionToDistance(y);
@@ -69,6 +94,7 @@ public class MapBehaviour : MonoBehaviour
         {
             explored_state = State.exploring;
             current_color = new Color(0.5f, 1, 0.5f, default_color.a);
+            text_object.SetActive(true);
             ResetColor();
         }
 
@@ -252,9 +278,10 @@ public class MapBehaviour : MonoBehaviour
         }
     }
 
-	public void SetVision(int vision){
-		this.vision = vision;
-	}
+    public void SetVision(int vision)
+    {
+        this.vision = vision;
+    }
 
     private void HighlightTiles(List<Vector2> tile_coordinates)
     {
@@ -310,6 +337,37 @@ public class MapBehaviour : MonoBehaviour
             foreach (Tile t in selected_tiles)
             {
                 t.SetExploring();
+            }
+        }
+    }
+
+    public static void RecalculateResourceDistribution(EnvironmentController.Environment e)
+    {
+        float fuel_probability = e.GetFuel();
+        float water_probability = e.GetWater() + fuel_probability;
+        float food_probability = e.GetFood() + water_probability;
+
+        for (int i = 0; i < map_size; ++i)
+        {
+            for (int j = 0; j < map_size; ++j)
+            {
+                float random = Random.Range(0f, 1f);
+                if (random < fuel_probability)
+                {
+                    tiles[i, j].SetResourceHere(Tile.Resource.fuel);
+                }
+                else if (random < water_probability)
+                {
+					tiles[i, j].SetResourceHere(Tile.Resource.water);
+                }
+                else if (random < food_probability)
+                {
+					tiles[i, j].SetResourceHere(Tile.Resource.food);
+                }
+                else
+                {
+					tiles[i, j].SetResourceHere(Tile.Resource.none);
+                }
             }
         }
     }

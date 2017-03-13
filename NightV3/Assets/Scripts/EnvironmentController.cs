@@ -77,6 +77,7 @@ public class EnvironmentController : MonoBehaviour
         {
             SetEnvironmentOfDifficulty(EnvironmentDifficulty.hard);
         }
+        MapBehaviour.RecalculateResourceDistribution(current_environment);
     }
 
     private static void SetEnvironmentOfDifficulty(EnvironmentDifficulty desired_difficulty)
@@ -127,9 +128,9 @@ public class EnvironmentController : MonoBehaviour
                     break;
             }
             this.name = name;
-            this.fuel = fuel;
-            this.food = food;
-            this.water = water;
+            this.fuel = fuel / 10f;
+            this.food = food / 10f;
+            this.water = water / 10f;
             this.condition = condition;
             this.wet_severity = wet_severity;
             this.dry_severity = dry_severity;
@@ -166,6 +167,18 @@ public class EnvironmentController : MonoBehaviour
         public float GetMinTemp()
         {
             return min_temp;
+        }
+
+        public float GetFuel(){
+            return fuel;
+        }
+
+        public float GetFood(){
+            return food;
+        }
+
+        public float GetWater(){
+            return water;
         }
     }
 }

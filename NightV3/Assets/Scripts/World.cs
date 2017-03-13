@@ -33,10 +33,13 @@ public class World : WorldObjectParent
 
     private void BindObjects()
     {
-        time_and_day_text = GameObject.Find("Time and Day").GetComponent<Text>();
-        temperature_text = GameObject.Find("Temperature").GetComponent<Text>();
-        weather_text = GameObject.Find("Weather").GetComponent<Text>();
-        environment_text = GameObject.Find("Environment").GetComponent<Text>();
+        if (GameObject.Find("Time and Day") != null)
+        {
+            time_and_day_text = GameObject.Find("Time and Day").GetComponent<Text>();
+            temperature_text = GameObject.Find("Temperature").GetComponent<Text>();
+            weather_text = GameObject.Find("Weather").GetComponent<Text>();
+            environment_text = GameObject.Find("Environment").GetComponent<Text>();
+        }
     }
 
     private void LoadGameData()
@@ -55,8 +58,11 @@ public class World : WorldObjectParent
     {
         WeatherController.SetNewWeather();
         EnvironmentController.CalculateTemperatures();
-        weather_text.text = WeatherController.GetCurrentWeather().GetName();
-        environment_text.text = EnvironmentController.GetCurrentEnvironment().GetName();
+        if (weather_text != null)
+        {
+            weather_text.text = WeatherController.GetCurrentWeather().GetName();
+            environment_text.text = EnvironmentController.GetCurrentEnvironment().GetName();
+        }
     }
 
     private void GetInput()
