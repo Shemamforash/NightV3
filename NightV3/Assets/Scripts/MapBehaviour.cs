@@ -6,12 +6,60 @@ using UnityEngine.UI;
 public class MapBehaviour : MonoBehaviour
 {
     public GameObject map_tile;
-    private int map_size, tile_side_length;
+    private static int map_size, tile_side_length;
     private float normalised_tile_side, desired_map_width, actual_map_width;
-    private GameObject[,] tiles;
+    private Tile[,] tiles;
     private float map_left, map_right, map_top, map_bottom;
-    private int vision = 2;
+    private int vision = 4;
     private float last_screen_width, last_screen_height;
+
+    private class Tile
+    {
+        public enum Resource { water, fuel, food, scrap };
+        public Resource resource_here;
+        public float resource_quantity;
+        public enum State { explored, exploring, unexplored };
+        private float danger;
+        private Color default_color;
+        private GameObject tile_object;
+        public Tile(GameObject tile_object, int x, int y)
+        {
+            this.tile_object = tile_object;
+            if (x < map_size / 2)
+            {
+                x -= map_size;
+                x = Mathf.Abs(x) - 1;
+            }
+            if (y < map_size / 2)
+            {
+                y -= map_size;
+                y = Mathf.Abs(y) - 1;
+            }
+            x -= map_size / 2;
+            y -= map_size / 2;
+            Debug.Log(x + "  " + y);
+            if (x >= y)
+            {
+                danger = 2f / map_size * x;
+            }
+            else
+            {
+                danger = 2f / map_size * y;
+            }
+			danger = 1 - danger;
+            default_color = new Color(1, 1, 1, danger / 2f + 0.5f);
+			ResetColor();
+        }
+        public void ResetColor()
+        {
+            tile_object.GetComponent<Image>().color = default_color;
+        }
+
+        public GameObject GetTileObject()
+        {
+            return tile_object;
+        }
+    }
 
     void Start()
     {
@@ -24,13 +72,13 @@ public class MapBehaviour : MonoBehaviour
         GenerateSquare();
         RecalculateMapBounds();
     }
-    private GameObject centre_tile = null;
+    private Tile centre_tile = null;
 
     private void GenerateSquare()
     {
         tile_side_length = (int)(desired_map_width / map_size);
         normalised_tile_side = 1f / desired_map_width * tile_side_length;
-        tiles = new GameObject[map_size, map_size];
+        tiles = new Tile[map_size, map_size];
         float y_anchor = 0;
         int centre_tiles = map_size / 2 - 1;
         bool add_centre_tile = false;
@@ -57,9 +105,10 @@ public class MapBehaviour : MonoBehaviour
                 }
                 if (add_tile)
                 {
-                    GameObject new_tile = Instantiate(map_tile, transform.position, transform.rotation);
-                    new_tile.transform.SetParent(transform);
-                    RectTransform new_tile_rect = new_tile.GetComponent<RectTransform>();
+                    GameObject new_tile_object = Instantiate(map_tile, transform.position, transform.rotation);
+                    Tile new_tile = new Tile(new_tile_object, i, j);
+                    new_tile_object.transform.SetParent(transform);
+                    RectTransform new_tile_rect = new_tile_object.GetComponent<RectTransform>();
                     new_tile_rect.localScale = new Vector3(1f, 1f, 1f);
                     new_tile_rect.anchorMin = new Vector2(x_anchor, y_anchor);
                     new_tile_rect.anchorMax = new Vector2(x_anchor_max, y_anchor_max);
@@ -68,7 +117,7 @@ public class MapBehaviour : MonoBehaviour
                     if (add_centre_tile)
                     {
                         centre_tile = new_tile;
-						add_centre_tile = false;
+                        add_centre_tile = false;
                     }
                     tiles[i, j] = new_tile;
                 }
@@ -79,17 +128,18 @@ public class MapBehaviour : MonoBehaviour
         }
     }
 
-    private List<Image> selected_tiles = new List<Image>();
+    private List<Tile> selected_tiles = new List<Tile>();
 
     private void GetButtonOverlap()
     {
         Vector2 mouse_screen_position = Input.mousePosition;
         List<Vector2> potential_tiles_to_highlight = new List<Vector2>();
 
-        foreach (Image i in selected_tiles)
+        foreach (Tile i in selected_tiles)
         {
-            i.color = Color.white;
+            i.ResetColor();
         }
+
         selected_tiles.Clear();
 
         //If the mouse is within these bounds
@@ -110,27 +160,59 @@ public class MapBehaviour : MonoBehaviour
             int y_index = (int)Mathf.Floor(scaled_y);
             int extra_x, extra_y;
 
-            if (scaled_x - x_index > 0.5f)
+            if (vision % 2 == 0)
             {
-                extra_x = x_index + 1;
-            }
-            else
-            {
-                extra_x = x_index - 1;
-            }
+                if (scaled_x - x_index > 0.5f)
+                {
+                    extra_x = x_index + 1;
+                }
+                else
+                {
+                    extra_x = x_index;
+                    x_index--;
+                }
 
-            if (scaled_y - y_index > 0.5f)
-            {
-                extra_y = y_index + 1;
+                if (scaled_y - y_index > 0.5f)
+                {
+                    extra_y = y_index + 1;
+                }
+                else
+                {
+                    extra_y = y_index;
+                    y_index--;
+                }
+
+                if (vision == 4)
+                {
+                    x_index--;
+                    extra_x++;
+                    y_index--;
+                    extra_y++;
+                }
+                // if(extra_x < x_index){
+                // 	int temp = extra_x;
+                // 	extra_x = x_index;
+                // 	x_index = temp;
+                // }
+                // if(extra_y < x_index){
+                // 	int temp = extra_x;
+                // 	extra_y = x_index;
+                // 	x_index = temp;
+                // }
+                for (int i = x_index; i <= extra_x; ++i)
+                {
+                    for (int j = y_index; j <= extra_y; ++j)
+                    {
+                        potential_tiles_to_highlight.Add(new Vector2(i, j));
+                    }
+                }
+
+                potential_tiles_to_highlight.Add(new Vector2(x_index, y_index));
+                potential_tiles_to_highlight.Add(new Vector2(x_index, extra_y));
+                potential_tiles_to_highlight.Add(new Vector2(extra_x, y_index));
+                potential_tiles_to_highlight.Add(new Vector2(extra_x, extra_y));
+
             }
-            else
-            {
-                extra_y = y_index - 1;
-            }
-            potential_tiles_to_highlight.Add(new Vector2(x_index, y_index));
-            potential_tiles_to_highlight.Add(new Vector2(x_index, extra_y));
-            potential_tiles_to_highlight.Add(new Vector2(extra_x, y_index));
-            potential_tiles_to_highlight.Add(new Vector2(extra_x, extra_y));
 
             HighlightTiles(potential_tiles_to_highlight);
 
@@ -144,11 +226,12 @@ public class MapBehaviour : MonoBehaviour
         {
             if (coordinate.x < map_size && coordinate.y < map_size && coordinate.x >= 0 && coordinate.y >= 0)
             {
-                Image i = tiles[(int)coordinate.y, (int)coordinate.x].GetComponent<Image>();
-                if (i.gameObject != centre_tile)
+                Tile t = tiles[(int)coordinate.y, (int)coordinate.x];
+                Image i = t.GetTileObject().GetComponent<Image>();
+                if (i.gameObject != centre_tile.GetTileObject())
                 {
                     i.color = Color.red;
-                    selected_tiles.Add(i);
+                    selected_tiles.Add(t);
                 }
             }
         }
