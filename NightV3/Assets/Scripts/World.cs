@@ -14,7 +14,8 @@ public class World : WorldObjectParent
     private float difficulty = 0.1f;
     private Text time_and_day_text, temperature_text, weather_text, environment_text;
 
-    public static int GetDayLength(){
+    public static int GetDayLength()
+    {
         return (int)(end_time - begin_time);
     }
 
@@ -30,7 +31,8 @@ public class World : WorldObjectParent
         StartNewDay();
     }
 
-    private void BindObjects() {
+    private void BindObjects()
+    {
         time_and_day_text = GameObject.Find("Time and Day").GetComponent<Text>();
         temperature_text = GameObject.Find("Temperature").GetComponent<Text>();
         weather_text = GameObject.Find("Weather").GetComponent<Text>();
@@ -49,7 +51,8 @@ public class World : WorldObjectParent
         }
     }
 
-    private void StartNewDay(){
+    private void StartNewDay()
+    {
         WeatherController.SetNewWeather();
         EnvironmentController.CalculateTemperatures();
         weather_text.text = WeatherController.GetCurrentWeather().GetName();
@@ -103,15 +106,18 @@ public class World : WorldObjectParent
         }
     }
 
-    private static void UpdateHours(){
+    private static void UpdateHours()
+    {
         ++current_time_hours;
     }
 
-    public float GetDifficulty(){
+    public float GetDifficulty()
+    {
         return difficulty;
     }
 
-    public float GetTime(){
+    public float GetTime()
+    {
         return current_time_hours;
     }
 
@@ -123,9 +129,13 @@ public class World : WorldObjectParent
         UpdateUI();
     }
 
-    private void UpdateUI(){
-        time_and_day_text.text = "Day: " + current_day + " " + current_time_hours.ToString("00") + ":" + ((int)(current_time_minutes * 100f)).ToString("00");
-        temperature_text.text = EnvironmentController.GetCurrentTemperature(current_time_hours - begin_time) + "\u00B0" + "C";
+    private void UpdateUI()
+    {
+        if (time_and_day_text != null)
+        {
+            time_and_day_text.text = "Day: " + current_day + " " + current_time_hours.ToString("00") + ":" + ((int)(current_time_minutes * 100f)).ToString("00");
+            temperature_text.text = EnvironmentController.GetCurrentTemperature(current_time_hours - begin_time) + "\u00B0" + "C";
+        }
     }
 
     private void EndDay()
