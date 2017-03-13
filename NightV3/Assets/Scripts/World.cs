@@ -64,6 +64,7 @@ public class World : WorldObjectParent
         if (Input.GetKeyDown("space"))
         {
             paused = !paused;
+            Debug.Log("paused = " + paused);
         }
     }
 

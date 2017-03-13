@@ -12,6 +12,7 @@ public class MapBehaviour : MonoBehaviour
     private float map_left, map_right, map_top, map_bottom;
     private int vision = 4;
     private float last_screen_width, last_screen_height;
+    private List<Tile> selected_tiles = new List<Tile>();
 
     private class Tile
     {
@@ -19,25 +20,15 @@ public class MapBehaviour : MonoBehaviour
         public Resource resource_here;
         public float resource_quantity;
         public enum State { explored, exploring, unexplored };
+        private State explored_state = State.unexplored;
         private float danger;
-        private Color default_color;
+        private Color default_color, current_color;
         private GameObject tile_object;
         public Tile(GameObject tile_object, int x, int y)
         {
             this.tile_object = tile_object;
-            if (x < map_size / 2)
-            {
-                x -= map_size;
-                x = Mathf.Abs(x) - 1;
-            }
-            if (y < map_size / 2)
-            {
-                y -= map_size;
-                y = Mathf.Abs(y) - 1;
-            }
-            x -= map_size / 2;
-            y -= map_size / 2;
-            Debug.Log(x + "  " + y);
+            x = PositionToDistance(x);
+            y = PositionToDistance(y);
             if (x >= y)
             {
                 danger = 2f / map_size * x;
@@ -46,18 +37,56 @@ public class MapBehaviour : MonoBehaviour
             {
                 danger = 2f / map_size * y;
             }
-			danger = 1 - danger;
-            default_color = new Color(1, 1, 1, danger / 2f + 0.5f);
-			ResetColor();
+            danger = 1 - danger;
+            danger = danger / 1.5f + 0.25f;
+            default_color = new Color(1, 1, 1, danger);
+            current_color = default_color;
+            ResetColor();
         }
         public void ResetColor()
         {
-            tile_object.GetComponent<Image>().color = default_color;
+            tile_object.GetComponent<Image>().color = current_color;
+        }
+
+        private int PositionToDistance(int v)
+        {
+            int half_map_size = map_size / 2;
+            if (v < half_map_size)
+            {
+                v -= map_size;
+                v = Mathf.Abs(v) - 1;
+            }
+            v -= half_map_size;
+            return v;
         }
 
         public GameObject GetTileObject()
         {
             return tile_object;
+        }
+
+        public void SetExploring()
+        {
+            explored_state = State.exploring;
+            current_color = new Color(0.5f, 1, 0.5f, default_color.a);
+            ResetColor();
+        }
+
+        public void SetExplored()
+        {
+            explored_state = State.explored;
+        }
+
+        public void SetUnexplored()
+        {
+            explored_state = State.unexplored;
+            current_color = default_color;
+            ResetColor();
+        }
+
+        public bool IsUnexplored()
+        {
+            return explored_state == State.unexplored;
         }
     }
 
@@ -128,7 +157,6 @@ public class MapBehaviour : MonoBehaviour
         }
     }
 
-    private List<Tile> selected_tiles = new List<Tile>();
 
     private void GetButtonOverlap()
     {
@@ -139,7 +167,6 @@ public class MapBehaviour : MonoBehaviour
         {
             i.ResetColor();
         }
-
         selected_tiles.Clear();
 
         //If the mouse is within these bounds
@@ -189,16 +216,6 @@ public class MapBehaviour : MonoBehaviour
                     y_index--;
                     extra_y++;
                 }
-                // if(extra_x < x_index){
-                // 	int temp = extra_x;
-                // 	extra_x = x_index;
-                // 	x_index = temp;
-                // }
-                // if(extra_y < x_index){
-                // 	int temp = extra_x;
-                // 	extra_y = x_index;
-                // 	x_index = temp;
-                // }
                 for (int i = x_index; i <= extra_x; ++i)
                 {
                     for (int j = y_index; j <= extra_y; ++j)
@@ -213,12 +230,31 @@ public class MapBehaviour : MonoBehaviour
                 potential_tiles_to_highlight.Add(new Vector2(extra_x, extra_y));
 
             }
+            else if (vision == 3)
+            {
+                for (int i = x_index - 1; i <= x_index + 1; ++i)
+                {
+                    for (int j = y_index - 1; j <= y_index + 1; ++j)
+                    {
+                        potential_tiles_to_highlight.Add(new Vector2(i, j));
+                    }
+                }
+            }
+            else
+            {
+                potential_tiles_to_highlight.Add(new Vector2(x_index, y_index));
+            }
+
 
             HighlightTiles(potential_tiles_to_highlight);
 
             float nearest_tile_distance = vision / 2;
         }
     }
+
+	public void SetVision(int vision){
+		this.vision = vision;
+	}
 
     private void HighlightTiles(List<Vector2> tile_coordinates)
     {
@@ -228,7 +264,7 @@ public class MapBehaviour : MonoBehaviour
             {
                 Tile t = tiles[(int)coordinate.y, (int)coordinate.x];
                 Image i = t.GetTileObject().GetComponent<Image>();
-                if (i.gameObject != centre_tile.GetTileObject())
+                if (i.gameObject != centre_tile.GetTileObject() && t.IsUnexplored())
                 {
                     i.color = Color.red;
                     selected_tiles.Add(t);
@@ -264,6 +300,18 @@ public class MapBehaviour : MonoBehaviour
     {
         UpdateScreenSides();
         GetButtonOverlap();
+        CheckInput();
+    }
+
+    private void CheckInput()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            foreach (Tile t in selected_tiles)
+            {
+                t.SetExploring();
+            }
+        }
     }
 
 }
